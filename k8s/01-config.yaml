@@ -5,7 +5,12 @@ metadata:
   namespace: blablacar
 data:
   POSTGRES_USER: user
-  POSTGRES_DB: db
+
+  USER_DB_URL: "jdbc:postgresql://user-postgres:5432/db"
+  SENDGRID__APIKEY: "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"
+
+  SENDGRID__FROMEMAIL: "velmakinairina2017@gmail.com"
+
   RABBIT_HOST: rabbitmq
 ---
 apiVersion: v1
@@ -17,3 +22,6 @@ type: Opaque
 stringData:
   POSTGRES_PASSWORD: pass
   RABBIT_PASSWORD: pass
+
+  ConnectionStrings__Order: "Host=order-postgres;Port=5432;Database=db;Username=user;Password=pass"
+  ConnectionStrings__Ride: "Host=ride-postgres;Port=5432;Database=db;Username=user;Password=pass"

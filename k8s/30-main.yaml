@@ -16,7 +16,7 @@ metadata:
   name: main
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: main
@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: main
-          image: blablacar-main:latest
+          image: kzholtikova/blablabla-main-service:1.4
           ports:
             - containerPort: 8080
           envFrom:

@@ -8,7 +8,7 @@ spec:
     app: order
   ports:
     - port: 80
-      targetPort: 8082
+      targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -16,7 +16,7 @@ metadata:
   name: order
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: order
@@ -27,9 +27,9 @@ spec:
     spec:
       containers:
         - name: order
-          image: blablacar-order:latest
+          image: ivelmakina/blablabla-order-service:1.6
           ports:
-            - containerPort: 8082
+            - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: blablacar-config

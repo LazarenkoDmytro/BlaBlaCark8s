@@ -8,7 +8,7 @@ spec:
     app: ride
   ports:
     - port: 80
-      targetPort: 8083
+      targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -16,7 +16,7 @@ metadata:
   name: ride
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: ride
@@ -27,9 +27,9 @@ spec:
     spec:
       containers:
         - name: ride
-          image: blablacar-ride:latest
+          image: ivelmakina/blablabla-ride-service:1.0
           ports:
-            - containerPort: 8083
+            - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: blablacar-config

@@ -16,7 +16,7 @@ metadata:
   name: user
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: user
@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: blablacar-user:latest
+          image: dmytrolazarenko/user-service:1.0.1
           ports:
             - containerPort: 8081
           envFrom:
