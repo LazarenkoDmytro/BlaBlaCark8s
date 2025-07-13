@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: dmytrolazarenko/user-service:1.0.1
+          image: dmytrolazarenko/user-service:1.0.8
           ports:
             - containerPort: 8081
           envFrom:

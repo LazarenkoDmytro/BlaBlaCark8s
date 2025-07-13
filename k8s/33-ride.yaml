@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: ride
-          image: ivelmakina/blablabla-ride-service:1.0
+          image: dmytrolazarenko/ride_service:1.0.9
           ports:
             - containerPort: 8080
           envFrom:
