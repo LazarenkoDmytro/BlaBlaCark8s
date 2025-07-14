@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: main
-          image: dmytrolazarenko/main-service:1.16
+          image: dmytrolazarenko/main-service:latest
           ports:
             - containerPort: 8080
           env:

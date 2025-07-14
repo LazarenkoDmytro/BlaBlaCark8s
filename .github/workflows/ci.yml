@@ -1,0 +1,93 @@
+name: blablacar-cd
+
+on:
+  push:
+    branches: [ main ]
+    paths: ['k8s/**/*.yaml']
+  repository_dispatch:
+    types:
+      - update-main-service
+      - update-notification-service
+      - update-order-service
+      - update-payment-service
+      - update-ride-service
+      - update-user-service
+      - update-topology
+
+env:
+  KUBECONFIG: ${{ runner.temp }}/do-kubeconfig
+
+jobs:
+
+  deploy-manifests:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write kube-config
+        run: echo "${{ secrets.DO_KUBECONFIG_B64 }}" | base64 -d > "$KUBECONFIG"
+
+      - name: Install kubectl
+        run: sudo apt-get update && sudo apt-get -y install kubectl
+
+      - name: Apply all manifests in order
+        working-directory: k8s
+        run: |
+          for f in $(ls -1 *.yaml | sort -V); do
+            echo "Applying $f"
+            kubectl apply -f "$f"
+          done
+
+  rollout-single:
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write kube-config
+        run: echo "${{ secrets.DO_KUBECONFIG_B64 }}" | base64 -d > "$KUBECONFIG"
+
+      - name: Install kubectl
+        run: sudo apt-get update && sudo apt-get -y install kubectl
+
+      - name: Patch image
+        env:
+          TAG: ${{ github.event.client_payload.tag }}
+          EVT: ${{ github.event.action }}
+        run: |
+          svc="${EVT#update-}"
+          ns="blablacar"
+
+          case "$svc" in
+            main-service)
+              kubectl -n $ns set image deployment/main main=dmytrolazarenko/main-service:$TAG --record
+              ;;
+            notification-service)
+              kubectl -n $ns set image deployment/notification notification=dmytrolazarenko/notification-service:$TAG --record
+              ;;
+            order-service)
+              kubectl -n $ns set image deployment/order order=ivelmakina/blablabla-order-service:$TAG --record
+              ;;
+            payment-service)
+              kubectl -n $ns set image deployment/payment payment=dmytrolazarenko/payment-service:$TAG --record
+              ;;
+            ride-service)
+              kubectl -n $ns set image deployment/ride ride=dmytrolazarenko/ride_service:$TAG --record
+              ;;
+            user-service)
+              kubectl -n $ns set image deployment/user user=dmytrolazarenko/user-service:$TAG --record
+              ;;
+            topology)
+              kubectl -n $ns delete job rabbitmq-topology-init --ignore-not-found
+              kubectl -n $ns apply -f k8s/50-rabbitmq-topology-job.yaml
+              ;;
+            *)
+              echo "Unknown service $svc" && exit 1
+              ;;
+          esac
+
+      - name: Wait for rollout to finish
+        if: ${{ env.svc != 'topology' }}
+        run: |
+          kubectl -n blablacar rollout status deployment/${svc%-service} --timeout=10s
