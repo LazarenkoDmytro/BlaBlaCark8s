@@ -5,8 +5,19 @@ metadata:
   namespace: blablacar
 data:
   POSTGRES_USER: user
-  POSTGRES_DB: db
-  RABBIT_HOST: rabbitmq
+
+  USER_DB_URL: "jdbc:postgresql://user-postgres:5432/db"
+
+  ApiSettings__MainBaseUrl: "http://main-service:80/api"
+  ApiSettings__UserBaseUrl: "http://user-service:80/api"
+  ApiSettings__OrderBaseUrl: "http://order-service:80/api"
+  ApiSettings__RideBaseUrl: "http://ride-service:80/api"
+  ApiSettings__PaymentBaseUrl: "http://payment-service:80/api"
+  ApiSettings__NotificationBaseUrl: "http://notification-service:80/api"
+
+  RabbitMQ__HostName: rabbitmq
+  RabbitMQ__Port: "5672"
+
 ---
 apiVersion: v1
 kind: Secret
@@ -15,5 +26,11 @@ metadata:
   namespace: blablacar
 type: Opaque
 stringData:
-  POSTGRES_PASSWORD: pass
-  RABBIT_PASSWORD: pass
+  POSTGRES_PASSWORD: pass§
+
+  RABBITMQ_USER: blabla
+  RABBITMQ_PASSWORD: pass
+
+  ConnectionStrings__Order: "Host=order-postgres;Port=5432;Database=db;Username=user;Password=pass"
+  ConnectionStrings__Ride: "Host=ride-postgres;Port=5432;Database=db;Username=user;Password=pass"
+  ConnectionStrings__OutboxDbContext: "Host=main-postgres;Port=5432;Database=db;Username=user;Password=pass"

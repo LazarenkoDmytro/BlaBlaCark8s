@@ -8,7 +8,7 @@ spec:
     app: ride
   ports:
     - port: 80
-      targetPort: 8083
+      targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -16,7 +16,7 @@ metadata:
   name: ride
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: ride
@@ -25,11 +25,15 @@ spec:
       labels:
         app: ride
     spec:
+      initContainers:
+        - name: wait-db
+          image: busybox
+          command: ["sh","-c","until nc -z ride-postgres 5432; do sleep 2; done"]
       containers:
         - name: ride
-          image: ghcr.io/example/blablacar-ride:latest
+          image: dmytrolazarenko/ride-service:65a426fb94c3f236fabb60b0aa71d6fda3e30623
           ports:
-            - containerPort: 8083
+            - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: blablacar-config

@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: main-service
+  namespace: blablacar
+spec:
+  selector:
+    app: main
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main
+  namespace: blablacar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+    spec:
+      initContainers:
+        - name: wait-db
+          image: busybox
+          command: ["sh","-c","until nc -z main-postgres 5432; do sleep 2; done"]
+        - name: wait-rabbit
+          image: busybox
+          command: ["sh","-c","until nc -z rabbitmq 5672; do sleep 2; done"]
+      containers:
+        - name: main
+          image: dmytrolazarenko/main-service:65a426fb94c3f236fabb60b0aa71d6fda3e30623
+          ports:
+            - containerPort: 8080
+          env:
+            - name: RabbitMQ__UserName
+              valueFrom:
+                secretKeyRef:
+                  name: blablacar-secret
+                  key: RABBITMQ_USER
+            - name: RabbitMQ__Password
+              valueFrom:
+                secretKeyRef:
+                  name: blablacar-secret
+                  key: RABBITMQ_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: blablacar-config
+            - secretRef:
+                name: blablacar-secret

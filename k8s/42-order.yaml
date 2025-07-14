@@ -1,35 +1,39 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
+  name: order-service
   namespace: blablacar
 spec:
   selector:
-    app: user
+    app: order
   ports:
     - port: 80
-      targetPort: 8081
+      targetPort: 8080
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user
+  name: order
   namespace: blablacar
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: user
+      app: order
   template:
     metadata:
       labels:
-        app: user
+        app: order
     spec:
+      initContainers:
+        - name: wait-db
+          image: busybox
+          command: ["sh","-c","until nc -z order-postgres 5432; do sleep 2; done"]
       containers:
-        - name: user
-          image: ghcr.io/example/blablacar-user:latest
+        - name: order
+          image: dmytrolazarenko/order-service:65a426fb94c3f236fabb60b0aa71d6fda3e30623
           ports:
-            - containerPort: 8081
+            - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: blablacar-config
