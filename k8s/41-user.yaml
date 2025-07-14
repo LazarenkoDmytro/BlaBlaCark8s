@@ -25,6 +25,10 @@ spec:
       labels:
         app: user
     spec:
+      initContainers:
+        - name: wait-db
+          image: busybox
+          command: ["sh","-c","until nc -z user-postgres 5432; do sleep 2; done"]
       containers:
         - name: user
           image: dmytrolazarenko/user-service:92c51087093b85e400ca174738c5970acb223d2e

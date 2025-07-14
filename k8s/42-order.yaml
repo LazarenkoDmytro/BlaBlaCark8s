@@ -25,9 +25,13 @@ spec:
       labels:
         app: order
     spec:
+      initContainers:
+        - name: wait-db
+          image: busybox
+          command: ["sh","-c","until nc -z order-postgres 5432; do sleep 2; done"]
       containers:
         - name: order
-          image: ivelmakina/blablabla-order-service:1.6
+          image: dmytrolazarenko/order-service:65a426fb94c3f236fabb60b0aa71d6fda3e30623
           ports:
             - containerPort: 8080
           envFrom:
