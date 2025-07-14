@@ -3,7 +3,7 @@ name: blablacar-cd
 on:
   push:
     branches: [ main ]
-    paths: ['k8s/**/*.yaml']
+    paths: [ 'k8s/**/*.yaml' ]
   repository_dispatch:
     types:
       - update-main-service
@@ -15,7 +15,7 @@ on:
       - update-topology
 
 env:
-  KUBECONFIG: ${{ runner.temp }}/do-kubeconfig
+  KUBECONFIG: /tmp/do-kubeconfig
 
 jobs:
 
@@ -80,7 +80,7 @@ jobs:
               ;;
             topology)
               kubectl -n $ns delete job rabbitmq-topology-init --ignore-not-found
-              kubectl -n $ns apply -f k8s/50-rabbitmq-topology-job.yaml
+              kubectl -n $ns apply -f k8s/30-rabbitmq-topology-job.yaml
               ;;
             *)
               echo "Unknown service $svc" && exit 1
@@ -88,6 +88,9 @@ jobs:
           esac
 
       - name: Wait for rollout to finish
-        if: ${{ env.svc != 'topology' }}
+        if: ${{ github.event.action != 'update-topology' }}
+        env:
+          EVT: ${{ github.event.action }}
         run: |
+          svc="${EVT#update-}"
           kubectl -n blablacar rollout status deployment/${svc%-service} --timeout=10s
